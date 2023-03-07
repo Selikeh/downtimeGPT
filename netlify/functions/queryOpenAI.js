@@ -2,9 +2,10 @@ const axios = require("axios");
 
 exports.handler = async function (event, context) {
     const {queryText} = event.queryStringParameters
-   
+    
     console.log(event);
     console.log(context);
+//    
 
     try{
         let response = await axios('https://api.openai.com/v1/completions', {

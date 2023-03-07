@@ -64,7 +64,7 @@ function ChatScreen(){
     function askOpenAI(text, conversationID = state.conversationID){
         
     
-        fetch(`/netlify/functions/queryOpenAI?queryText=${text}`)
+        fetch(`/.netlify/functions/queryOpenAI?queryText=${text}`)
         .then(response => response.json())
         .then((response) => {
             console.log(response);
