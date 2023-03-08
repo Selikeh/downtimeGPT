@@ -2,19 +2,20 @@ import { useLocation } from "react-router-dom"
 import {useSelector, useDispatch} from "react-redux"
 import { useState, useRef, useEffect} from "react"
 import { addConversation, updateConversation } from "../../redux_Files/features/conversations/conversationsSlice"
+import roboImage from "../../images/call-center-isometric-concept_1284-69078-removebg-preview (1).png"
 
 function ChatScreen(){
     const conversations = useSelector(state => state.conversations.value)
     const dispatch = useDispatch()
     let location = useLocation()
-    let {state} = useLocation()
+    let {state} = location
     // console.log(state)
     
 
     // console.log('test')
     const [textBoxText, setTextBoxText] = useState('')
     // const [newConversation, setNewConversation] = useState(state === null)
-    // const [processingRequest,setProcessingRequest] = useState(false)
+    const [processingRequest,setProcessingRequest] = useState(false)
     const convoHistoryDiv = useRef()
 
     // console.log(location.pathname)
@@ -42,11 +43,16 @@ function ChatScreen(){
                 let fullQueryText = chatPrePrompt + fullConvoContext + 'The new prompt is:' + textBoxText
 
                 setTextBoxText('')
+                setProcessingRequest(true)
                 askOpenAI(fullQueryText)
             }else{
                 // console.log('New conversation')
                 // console.log(crypto.randomUUID())
                 let newID = crypto.randomUUID()
+                location.state = {conversationID: newID}
+                location.pathname = `/ChatScreen/${newID}`
+                console.log(state)
+                setProcessingRequest(true)
                 dispatch(addConversation({
                     conversationID: newID,
                     speaker: "User",
@@ -54,39 +60,63 @@ function ChatScreen(){
                     speechID: crypto.randomUUID()
                 }))
                 setTextBoxText('')
-                location.state = {conversationID: newID}
-                location.pathname = `/ChatScreen/${newID}`
                 askOpenAI(textBoxText, newID)
             }
         }
     }
 
+    function handleTextBoxInput(e){
+        e.preventDefault()
+        if(e.keyCode !==13){
+            setTextBoxText(e.target.value)
+        }
+    }
+
+    function handleKeyDown(e){
+        if(e.keyCode === 13){
+            e.preventDefault()
+            handleSendBtnClick()
+        }
+    }
+
     function askOpenAI(text, conversationID = state.conversationID){
-        
-    
+       
         fetch(`/.netlify/functions/queryOpenAI?queryText=${text}`)
-        .then(response => response.json())
+        .then(response => {
+            if(response.statusText !== "OK"){
+                // console.log(response)
+                alert("There was an error fetching the query response")
+                throw new Error('There was an error fetching the query response')
+            }else{
+               return response.json()
+            }
+        })
         .then((response) => {
-            console.log(response);
+            // console.log(response);
             // console.log(response.choices[0].text)
-          
-            dispatch(updateConversation({
-                conversationID: conversationID,
-                speaker: "ChatAI",
-                text: response.choices[0].text,
-                speechID: crypto.randomUUID()
-            }))
+            if(!response){
+                // alert('There was an error')
+                console.log("!!!")
+            }else{
+                setProcessingRequest(false)
+                dispatch(updateConversation({
+                    conversationID: conversationID,
+                    speaker: "ChatAI",
+                    text: response.choices[0].text,
+                    speechID: crypto.randomUUID()
+                }))
+            }
             // console.log(state.conversationID)
 
             
           
-        //   setProcessingRequest(false)
           
           // sythesize voice to read out the response
         });
         // .then(response=>{
         //     console.log(response)
         // })
+    
         
        
       }
@@ -116,6 +146,16 @@ function ChatScreen(){
                                 <span>{speech.text}</span>
                             </div>
                         ))}
+                        {processingRequest && (
+                            <div className="py-3 px-3 md:px-28 my-2 bg-zinc-600">
+                                <span className=" bg-teal-700 px-3 mr-2">ChatAI:</span>
+                                <span>
+                                    <span className=" h-2 mx-1 aspect-square rounded-md inline-block bg-neutral-200 animate-stretching1"></span>
+                                    <span className=" h-2 mx-1 aspect-square rounded-md inline-block bg-neutral-200 animate-stretching2"></span>
+                                    <span className=" h-2 mx-1 aspect-square rounded-md inline-block bg-neutral-200 animate-stretching3"></span>
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </>
 
@@ -123,13 +163,28 @@ function ChatScreen(){
             :
             (   
                 <>
-                    <div>New Conversation</div>
-                    
+                    <div className=" max-h-[85vh] overflow-y-none scrollbar pt-12 pb-7 mb-5 md:pt-0">
+                        <div className=" text-center">New Conversation</div>
+                        <div className=" flex flex-col justify-center items-center mt-4">
+                            <img className=" aspect-square h-80 drop-shadow-md" src={roboImage} alt="" />
+                            <h3 className=" px-3 text-center text-lg font-semibold">downtimeGPT is ready to answer your questions</h3>
+                        </div>
+                    </div>
+                    {processingRequest && (
+                            <div className="py-3 px-3 md:px-28 my-2 bg-zinc-600">
+                                <span className=" bg-teal-700 px-3 mr-2">ChatAI:</span>
+                                <span>
+                                    <span className=" h-2 mx-1 aspect-square rounded-md inline-block bg-neutral-200 animate-stretching1"></span>
+                                    <span className=" h-2 mx-1 aspect-square rounded-md inline-block bg-neutral-200 animate-stretching2"></span>
+                                    <span className=" h-2 mx-1 aspect-square rounded-md inline-block bg-neutral-200 animate-stretching3"></span>
+                                </span>
+                            </div>
+                        )}
                 </>
                 
             )}
             <div className=" fixed bottom-0 w-full mr-6 pb-2 flex justify-center bg-gradient-to-b from-transparent to-zinc-700">
-                <textarea className=" resize-y p-2 w-[60%] max-h-32 min-h-[24px] scrollbar border border-r-slate-200 outline-none rounded-l-md bg-slate-400 text-zinc-800" type="text" value={textBoxText} onInput={(e)=>setTextBoxText(e.target.value)}/>
+                <textarea className=" resize-y p-2 w-[60%] max-h-32 min-h-[24px] scrollbar border border-r-slate-200 outline-none rounded-l-md bg-slate-400 text-zinc-800 placeholder:text-neutral-200" type="text" placeholder="Type Your Query Here" value={textBoxText} onInput={(e)=>handleTextBoxInput(e)} onKeyDown={e=>handleKeyDown(e)}/>
                 <button className=" bg-green-500 px-5 rounded-r-md" onClick={handleSendBtnClick}>Send</button>
                 {/* <button onClick={handleTestClick}>Test Button</button> */}
             </div>
