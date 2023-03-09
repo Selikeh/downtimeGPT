@@ -84,7 +84,7 @@ function ChatScreen(){
         fetch(`/.netlify/functions/queryOpenAI?queryText=${text}`)
         .then(response => {
             if(response.statusText !== "OK"){
-                // console.log(response)
+                console.log(response)
                 alert("There was an error fetching the query response")
                 throw new Error('There was an error fetching the query response')
             }else{
