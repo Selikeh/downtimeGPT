@@ -244,7 +244,7 @@ function ChatScreen() {
                 alt=""
               />
               <h3 className=" px-3 text-center text-lg font-semibold">
-                downtimeGPT is ready to answer your questions
+                DowntimeGPT is ready to answer your questions.
               </h3>
             </div>
           </div>
