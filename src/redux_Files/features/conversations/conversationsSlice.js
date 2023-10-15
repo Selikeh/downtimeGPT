@@ -10,13 +10,13 @@ export const conversationsSlice = createSlice({
             //     conversationHistory:[
             //         {
             //             speechID: 1,
-            //             speaker: 'You',
-            //             text: 'Trial Text 123'
+            //             role: 'You',
+            //             content: 'Trial content 123'
             //         },
             //         {
             //             speechID: 2,
-            //             speaker: 'Phil',
-            //             text: 'Quick fox'
+            //             role: 'Phil',
+            //             content: 'Quick fox'
             //         }
             //     ]
             // },
@@ -26,13 +26,13 @@ export const conversationsSlice = createSlice({
             //     conversationHistory:[
             //         {
             //             speechID: 1,
-            //             speaker: 'You',
-            //             text: 'Fill In Text 356'
+            //             role: 'You',
+            //             content: 'Fill In content 356'
             //         },
             //         {
             //             speechID: 2,
-            //             speaker: 'Rick',
-            //             text: 'Lazy Dog'
+            //             role: 'Rick',
+            //             content: 'Lazy Dog'
             //         }
             //     ]
             // }
@@ -40,25 +40,25 @@ export const conversationsSlice = createSlice({
     },
     reducers:{
         addConversation: (state, action)=>{
-            const { conversationID, speaker, text, speechID } = action.payload
+            const { conversationID, role, content, speechID } = action.payload
             state.value.push({
                 conversationID,
-                conversationTitle: text,
+                conversationTitle: content,
                 conversationHistory:[
                     {
                         speechID,
-                        speaker,
-                        text
+                        role,
+                        content
                     }
                 ]   
             })
         },
         updateConversation: (state, action)=>{
-            const {conversationID, speaker, text, speechID} = action.payload
+            const {conversationID, role, content, speechID} = action.payload
             state.value[state.value.findIndex(convo=> convo.conversationID === conversationID)].conversationHistory.push({
                 speechID,
-                speaker,
-                text
+                role,
+                content
             })
         }
     }
