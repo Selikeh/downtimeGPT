@@ -17,8 +17,9 @@ function ChatScreen() {
   // console.log('test')
   const [textBoxText, setTextBoxText] = useState("");
   // const [newConversation, setNewConversation] = useState(state === null)
-  const [processingRequest, setProcessingRequest] = useState(false);
+  const [processingRequest, setProcessingRequest] = useState(true);
   const convoHistoryDiv = useRef();
+  // const chatAIAnimation = useRef();
 
   // console.log(location.pathname)
 
@@ -29,15 +30,17 @@ function ChatScreen() {
   // }
   function handleSendBtnClick() {
     // let fullConvoContext = conversations[conversations.findIndex(convo=> convo.conversationID === state.conversationID)].conversationHistory.reduce((fullHistory, currentText)=>[fullHistory, {role: currentText.role, content:currentText.content}]).map(elem=>({role:elem.role, content:elem.content}))
-
+    // console.log(chatAIAnimation.current)
+    // setProcessingRequest(true)
     // console.log(fullConvoContext)
     if (textBoxText !== "") {
       if (state) {
         // console.log('old coversation')
+        // console.log('old coversation')
         dispatch(
           updateConversation({
             conversationID: state.conversationID,
-            role: "User",
+            role: "user",
             content: textBoxText,
             speechID: crypto.randomUUID(),
           })
@@ -55,19 +58,18 @@ function ChatScreen() {
           ])
           .map((elem) => ({ role: elem.role, content: elem.content }));
 
-        let chatPrePrompt =
-          "The folowing prompt comes with a history of conversation prompts and responses between I, the user and chatGPT/open AI's API. Consider it in the context for answering the prompt at the end of this request if needed";
+        // let chatPrePrompt ="The folowing prompt comes with a history of conversation prompts and responses between I, the user and chatGPT/open AI's API. Consider it in the context for answering the prompt at the end of this request if needed";
 
         // let fullQueryContent = /* chatPrePrompt + */ fullConvoContext + 'The new prompt is:' + textBoxText
         let fullQueryContent = [
           ...fullConvoContext,
-          { role: "User", content: textBoxText },
+          { role: "user", content: textBoxText },
         ];
 
-        console.log(fullQueryContent);
+        // console.log(fullQueryContent);
 
         setTextBoxText("");
-        setProcessingRequest(true);
+        setProcessingRequest(true)
         askOpenAI(fullQueryContent);
       } else {
         // console.log('New conversation')
@@ -75,20 +77,21 @@ function ChatScreen() {
         let newID = crypto.randomUUID();
         location.state = { conversationID: newID };
         location.pathname = `/ChatScreen/${newID}`;
-        console.log(state);
-        setProcessingRequest(true);
+        // console.log(location.state);
         dispatch(
           addConversation({
             conversationID: newID,
-            role: "User",
+            role: "user",
             content: textBoxText,
             speechID: crypto.randomUUID(),
           })
         );
-        askOpenAI([{ role: "User", content: textBoxText }], newID);
-        setProcessingRequest(true);
+        // console.log("animation")
+        setProcessingRequest(true)
+        askOpenAI([{ role: "user", content: textBoxText }], newID);
         setTextBoxText("");
       }
+      // setProcessingRequest(true);
     }
   }
 
@@ -107,6 +110,7 @@ function ChatScreen() {
   }
 
   function askOpenAI(fullQuery, conversationID = state.conversationID) {
+    // setProcessingRequest(true)
     // fetch(`/.netlify/functions/queryOpenAI?queryText=${text}`)
     fetch(`/.netlify/functions/queryOpenAI`, {
       method: "POST",
@@ -115,7 +119,8 @@ function ChatScreen() {
       .then((response) => {
         if (response.status !== 200) {
           console.log(response);
-          alert("There was an error fetching the query response");
+          setProcessingRequest(false)
+          alert("There was an error fetching the query response. Reload the page and try again");
           throw new Error("There was an error fetching the query response");
         } else {
           return response.json();
@@ -130,6 +135,7 @@ function ChatScreen() {
           console.log("!!!");
         } else {
           setProcessingRequest(false);
+          // chatAIAnimation.current.style.display = "none"
           dispatch(
             updateConversation({
               conversationID: conversationID,
@@ -153,39 +159,44 @@ function ChatScreen() {
       convoHistoryDiv.current.scrollTop = convoHistoryDiv.current.scrollHeight;
     }
   }, [conversations, state]);
+  // useEffect(() => {
 
-  function handleTestClick() {
-    console.log("testing.....");
-    // let fullQueryContent = conversations[conversations.findIndex(convo=> convo.conversationID === 1)].conversationHistory.reduce((fullHistory, currentText)=>(`${fullHistory} [${currentText.role}: ${currentText.text}]`), '')
-    // console.log(fullQueryContent)
-    // console.log(convoHistoryDiv.current)
-    // console.log(conversations)
+  //   if(chatAIAnimation.current){chatAIAnimation.current.style.display = processingRequest? "block":"none" 
+  //   console.log(chatAIAnimation.current)}
+  // }, [processingRequest]);
 
-    let info = [
-      {
-        role: "system",
-        content: "You are a helpful assistant.",
-      },
-      {
-        role: "User",
-        content: "Hello!",
-      },
-    ];
+  // function handleTestClick() {
+  //   console.log("testing.....");
+  //   // let fullQueryContent = conversations[conversations.findIndex(convo=> convo.conversationID === 1)].conversationHistory.reduce((fullHistory, currentText)=>(`${fullHistory} [${currentText.role}: ${currentText.text}]`), '')
+  //   // console.log(fullQueryContent)
+  //   // console.log(convoHistoryDiv.current)
+  //   // console.log(conversations)
 
-    fetch(`/.netlify/functions/queryOpenAI?queryText=${"apple"}`, {
-      method: "POST",
-      body: JSON.stringify(info),
-    }).then((response) => {
-      if (response.status !== 200) {
-        console.log(response);
-        alert("There was an error fetching the query response");
-        throw new Error("There was an error fetching the query response");
-      } else {
-        let data = response.json();
-        //    return response.json()
-      }
-    });
-  }
+  //   let info = [
+  //     {
+  //       role: "system",
+  //       content: "You are a helpful assistant.",
+  //     },
+  //     {
+  //       role: "Uuer",
+  //       content: "Hello!",
+  //     },
+  //   ];
+
+  //   fetch(`/.netlify/functions/queryOpenAI?queryText=${"apple"}`, {
+  //     method: "POST",
+  //     body: JSON.stringify(info),
+  //   }).then((response) => {
+  //     if (response.status !== 200) {
+  //       console.log(response);
+  //       alert("There was an error fetching the query response");
+  //       throw new Error("There was an error fetching the query response");
+  //     } else {
+  //       let data = response.json();
+  //       //    return response.json()
+  //     }
+  //   });
+  // }
 
   return (
     <div className=" h-screen max-h-full px-6 bg-zinc-700 w-full flex justify-center">
@@ -196,6 +207,7 @@ function ChatScreen() {
             ref={convoHistoryDiv}
             className=" max-h-[85vh] overflow-y-auto scrollbar pt-12 pb-7 mb-5 md:pt-0"
           >
+            
             {conversations[
               conversations.findIndex(
                 (convo) => convo.conversationID === state.conversationID
@@ -216,13 +228,15 @@ function ChatScreen() {
                       : " bg-purple-800 px-3 mr-2"
                   }
                 >
-                  {speech.role === "assistant" ? "ChatAI" : speech.role}:
+                  {speech.role === "assistant" ? "ChatAI" : "User"}:
                 </span>
                 <span>{speech.content}</span>
               </div>
             ))}
-            {processingRequest && (
-              <div className="py-3 px-3 md:px-28 my-2 bg-zinc-600">
+            {
+            processingRequest && 
+            (
+              <div className= " py-3 px-3 md:px-28 my-2 bg-zinc-600">
                 <span className=" bg-teal-700 px-3 mr-2">ChatAI:</span>
                 <span>
                   <span className=" h-2 mx-1 aspect-square rounded-md inline-block bg-neutral-200 animate-stretching1"></span>
@@ -236,7 +250,7 @@ function ChatScreen() {
       ) : (
         <>
           <div className=" max-h-[85vh] overflow-y-none scrollbar pt-12 pb-7 mb-5 md:pt-0">
-            <div className=" text-center">New Conversation</div>
+            <div className=" text-center pt-2 font-semibold">New Conversation</div>
             <div className=" flex flex-col justify-center items-center mt-4">
               <img
                 className=" aspect-square h-80 drop-shadow-md"
@@ -248,16 +262,6 @@ function ChatScreen() {
               </h3>
             </div>
           </div>
-          {processingRequest && (
-            <div className="py-3 px-3 md:px-28 my-2 bg-zinc-600">
-              <span className=" bg-teal-700 px-3 mr-2">ChatAI:</span>
-              <span>
-                <span className=" h-2 mx-1 aspect-square rounded-md inline-block bg-neutral-200 animate-stretching1"></span>
-                <span className=" h-2 mx-1 aspect-square rounded-md inline-block bg-neutral-200 animate-stretching2"></span>
-                <span className=" h-2 mx-1 aspect-square rounded-md inline-block bg-neutral-200 animate-stretching3"></span>
-              </span>
-            </div>
-          )}
         </>
       )}
       <div className=" fixed bottom-0 w-full mr-6 pb-2 flex justify-center bg-gradient-to-b from-transparent to-zinc-700">

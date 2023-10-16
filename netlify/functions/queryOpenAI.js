@@ -10,7 +10,7 @@ exports.handler = async function (event, context) {
     const queryMessages = JSON.parse(body)
     
     // console.log(event);
-    // console.log(queryMessages);
+    console.log(queryMessages);
     // console.log(context);
     
 
